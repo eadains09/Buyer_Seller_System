@@ -1,0 +1,344 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+
+@SuppressWarnings("serial")
+public class SellerFrontEnd extends JPanel{
+
+	private Font bodyFont = new Font(Font.SERIF, 20, 20);
+	private Font headerFont = new Font(Font.SERIF, Font.BOLD, 30);
+	private Color textFieldColor = new Color(245, 240, 240);
+	
+	private JPanel mainScreen;
+	private JLabel warning;
+	private JTextField programPass, confirmNumField, itemField;
+	private JTextArea resultsArea;
+	@SuppressWarnings("rawtypes")
+	private JList openOrdersList;
+	private JButton waitingOrdersButton, findOrdersButton, allOrdersButton;
+	private String[] openOrders;
+	
+	SellerFrontEnd()
+	{
+		this.setLayout(new BorderLayout());
+		this.setPreferredSize(new Dimension(600, 800));
+
+		JLabel header = new JLabel("Your eSell Account");
+			header.setFont(headerFont);
+			header.setHorizontalAlignment(SwingConstants.CENTER);
+			this.add(header, BorderLayout.NORTH);
+			
+		createNavigationPanel();
+		passwordEntryScreen();
+	}
+	
+	private void createNavigationPanel()
+	{
+		JPanel navigationPanel = new JPanel();
+			navigationPanel.setLayout(new GridLayout(5, 1));
+			this.add(navigationPanel, BorderLayout.WEST);
+		
+		waitingOrdersButton = new JButton("Waiting Orders");
+			waitingOrdersButton.addActionListener(new WaitingOrdersButtonListener());
+			navigationPanel.add(waitingOrdersButton);
+			waitingOrdersButton.setEnabled(false);
+			
+		findOrdersButton = new JButton("Find an Order");
+			findOrdersButton.addActionListener(new FindOrdersButtonListener());
+			navigationPanel.add(findOrdersButton);
+			findOrdersButton.setEnabled(false);
+		
+		allOrdersButton = new JButton("All Orders");
+			allOrdersButton.addActionListener(new AllOrdersButtonListener());
+			navigationPanel.add(allOrdersButton);
+			allOrdersButton.setEnabled(false);
+		
+		repaint();
+		revalidate();
+	}
+	
+	private void passwordEntryScreen()
+	{
+		mainScreen = new JPanel();
+			mainScreen.setLayout(new BoxLayout(mainScreen, BoxLayout.PAGE_AXIS));
+			this.add(mainScreen, BorderLayout.CENTER);
+			
+
+			JLabel unlock = new JLabel("Enter your password.");
+				unlock.setBackground(new Color(255, 255, 250));
+				unlock.setFont(bodyFont);
+			programPass = new JTextField();
+				programPass.setMaximumSize(new Dimension(400, 50));
+				programPass.setFont(bodyFont);
+			JButton enter = new JButton("Enter");
+				enter.setFont(bodyFont);
+				enter.addActionListener(new EnterButtonListener());
+			
+			mainScreen.add(unlock);
+			mainScreen.add(programPass);
+			mainScreen.add(enter);
+			
+			repaint();
+			revalidate();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void waitingOrdersScreen()
+	{
+		mainScreen.removeAll();
+		
+		JTextArea openOrdersArea = new JTextArea("No open orders at this time.");
+			openOrdersArea.setBackground(textFieldColor);
+			openOrdersArea.setMaximumSize(new Dimension(1000, 500));
+			openOrdersArea.setVisible(false);
+
+		JScrollPane scrollPane= new JScrollPane();
+		
+		if (SellerBackEnd.getWaitingDataLength()>0)
+		{
+			openOrders = new String[SellerBackEnd.getWaitingDataLength()];
+			for (int i=0; i<SellerBackEnd.getWaitingDataLength(); i++)
+			{
+				openOrders[i] = SellerBackEnd.getWaitingData(i);
+			}
+		
+			openOrdersList = new JList(openOrders);
+				openOrdersList.setBackground(textFieldColor);
+			scrollPane = new JScrollPane(openOrdersList);
+				scrollPane.setMaximumSize(new Dimension(1000, 500));
+			
+		}else
+		{
+			openOrdersArea.setVisible(true);
+			scrollPane.setVisible(false);
+		}
+		JButton clearItem = new JButton("Add Order to Completed Database");
+			clearItem.addActionListener(new ClearItemButtonListener());
+
+		mainScreen.add(scrollPane);
+		mainScreen.add(openOrdersArea);
+		mainScreen.add(clearItem);
+			
+		repaint();
+		revalidate();
+	}
+	
+	private void findOrdersScreen()
+	{
+		mainScreen.removeAll();
+		mainScreen.add(Box.createRigidArea(new Dimension(50, 50)));
+		
+		warning = new JLabel("At least one field must be filled.");
+			warning.setForeground(Color.RED);
+			warning.setVisible(false);
+		
+		JPanel confirmNumPanel = new JPanel();
+			confirmNumPanel.setLayout(new BoxLayout (confirmNumPanel, BoxLayout.LINE_AXIS));
+			confirmNumPanel.add(Box.createRigidArea(new Dimension(20, 20)));
+		JLabel confirmNumLabel = new JLabel("Confirmation #");
+		confirmNumField = new JTextField();
+			confirmNumField.setMaximumSize(new Dimension(300, 20));
+			
+		confirmNumPanel.add(confirmNumLabel);
+		confirmNumPanel.add(confirmNumField);
+		
+		JPanel itemPanel = new JPanel();
+			itemPanel.setLayout(new BoxLayout (itemPanel, BoxLayout.LINE_AXIS));
+			itemPanel.add(Box.createRigidArea(new Dimension(20, 20)));
+		JLabel itemLabel = new JLabel("Item Sold");
+		itemField = new JTextField();
+			itemField.setMaximumSize(new Dimension(300, 20));
+			
+		itemPanel.add(itemLabel);
+		itemPanel.add(itemField);
+		
+		JButton search = new JButton("Search");
+			search.addActionListener(new SearchButtonListener());
+		
+		resultsArea = new JTextArea();
+			resultsArea.setBackground(textFieldColor);
+		JScrollPane scrollPane = new JScrollPane(resultsArea);
+		
+		mainScreen.add(warning);
+		mainScreen.add(confirmNumPanel);
+		mainScreen.add(itemPanel);
+		mainScreen.add(search);
+		mainScreen.add(scrollPane);
+		
+		mainScreen.repaint();
+		mainScreen.revalidate();
+	}
+	
+	private void allOrdersScreen()
+	{
+		mainScreen.removeAll();
+		
+		JLabel allOrdersLabel = new JLabel("All Orders");
+		JTextArea allOrdersArea = new JTextArea();
+			allOrdersArea.setBackground(textFieldColor);
+		JScrollPane scrollPane = new JScrollPane(allOrdersArea);
+		
+		ArrayList<String> allOrders = new ArrayList<String>();
+		allOrders = SellerBackEnd.getDatabase();
+		allOrders.addAll(SellerBackEnd.getWaitingData());
+		
+		for (int i=0; i<allOrders.size(); i++)
+		{
+			allOrdersArea.append(allOrders.get(i) + "\n");
+		}
+		
+		mainScreen.add(allOrdersLabel);
+		mainScreen.add(scrollPane);
+		
+		mainScreen.repaint();
+		mainScreen.revalidate();
+	
+	}
+	
+	private class SearchButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			if (confirmNumField.getText().isEmpty() && itemField.getText().isEmpty())
+			{
+				warning.setVisible(true);
+			}else{
+				String confirmNum = confirmNumField.getText();
+				String item = itemField.getText();
+				boolean foundResults = false;
+				
+				ArrayList<String> results = new ArrayList<String>();
+				
+				if (!confirmNum.isEmpty())
+				{
+					results = SellerBackEnd.searchDatabase(confirmNum);
+					if (!results.isEmpty())
+					{
+						foundResults = true;
+						resultsArea.append("Confirmation Number Results: \n");
+						for (int i=0; i<results.size(); i++)
+						{
+							resultsArea.append(results.get(i) + "\n");
+						}
+					}
+				}
+				
+				if(!item.isEmpty())
+				{
+					results = new ArrayList<String>();
+				
+					results = SellerBackEnd.searchDatabase(item);
+					if (!results.isEmpty())
+					{
+						foundResults = true;
+						resultsArea.append("Item Results: \n");
+						for (int i=0; i<results.size(); i++)
+						{
+							resultsArea.append(results.get(i) + "\n");
+						}
+					}
+				}
+				
+				if(foundResults == false)
+				{
+					resultsArea.append("No results found for search parameters.");
+				}
+			}
+			mainScreen.revalidate();
+		}
+	}
+	
+	private class EnterButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			SellerBackEnd.setPassword(programPass.getText().trim());
+			SellerBackEnd.decryptDatabase();
+			boolean correct = SellerBackEnd.checkPassword();
+	
+			if (correct)
+			{
+				SellerBackEnd.decryptKey();
+				waitingOrdersButton.setEnabled(true);
+				findOrdersButton.setEnabled(true);
+				allOrdersButton.setEnabled(true);
+				programPass.setText(null);
+			}
+			else{
+				JLabel incorrect = new JLabel("Incorrect password entered. Try again.");
+				incorrect.setFont(bodyFont);
+				programPass.setText(null);
+				mainScreen.add(incorrect);
+			}
+			mainScreen.revalidate();
+		}
+	}
+	
+	private class WaitingOrdersButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+
+			/////////////Comment out the following line to test program without sockets/////////////////
+			SellerBackEnd.decryptTempData();
+			/////////////Comment out the above line to test program without sockets/////////////////////
+			
+			//////Un-comment the following line to test program without sockets///////////////////////
+			//SellerBackEnd.readOrderFromFile();
+			//////Un-comment the above line to test program without sockets///////////////////////
+		
+			waitingOrdersScreen();
+		}
+	}
+	
+	private class ClearItemButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			String removeItem = openOrdersList.getSelectedValue().toString();
+			for (int i=0; i<openOrders.length; i++)
+			{
+				if (openOrders[i].equals(removeItem))
+				{
+					SellerBackEnd.addtoDatabase(removeItem);
+					SellerBackEnd.deleteWaitingItem(removeItem);
+				}
+			}
+			
+			waitingOrdersScreen();
+		}
+	}
+	
+	private class FindOrdersButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			findOrdersScreen();
+		}
+	}
+	
+	private class AllOrdersButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			allOrdersScreen();
+		}
+	}
+
+}
