@@ -1,0 +1,15 @@
+import javax.swing.JFrame;
+
+
+public class BuyerDriver {
+	
+	public static void main (String[] args)
+	{
+		JFrame frame = new JFrame("eSell Buyer System");
+		BuyerFrontEnd panel = new BuyerFrontEnd();
+		frame.getContentPane().add(panel);
+		frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		frame.setVisible(true);
+	}
+}

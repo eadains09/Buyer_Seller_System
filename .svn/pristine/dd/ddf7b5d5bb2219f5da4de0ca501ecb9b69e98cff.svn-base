@@ -1,0 +1,29 @@
+
+public class BuyerBackEnd {
+	private static String confirmNum;
+	private static int successState;
+	
+	public static void sendToBackEnd(String purchaseData, String hostName)
+	{
+		String encryptedData = Encryption.EncryptData(purchaseData);
+		ClientSocket.communicateWithSeller(hostName, encryptedData);
+	}
+
+	public static String getConfirmNum() {
+		return confirmNum;
+	}
+
+	public static void setConfirmNum(String confirmNum) {
+		BuyerBackEnd.confirmNum = confirmNum;
+	}
+
+	public static int getSuccessState() {
+		return successState;
+	}
+
+	public static void setSuccessState(int successState) {
+		BuyerBackEnd.successState = successState;
+	}
+	
+
+}

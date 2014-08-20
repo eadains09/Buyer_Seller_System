@@ -1,0 +1,31 @@
+
+public class BuyerSocketProtocol {
+	private static final int WAITING_TO_SEND_DATA = 0;
+    private static final int WAITING_FOR_CONFIRM_NUM = 1;
+    private String encryptedData;
+    private int state;
+
+
+    
+    BuyerSocketProtocol(String encryptedData)
+    {
+    	this.encryptedData = encryptedData;
+        state = WAITING_TO_SEND_DATA;
+    }
+
+    public String processInput(String theInput) {
+        String theOutput = null;
+
+        if (state == WAITING_TO_SEND_DATA) {
+            theOutput = encryptedData;
+            state = WAITING_FOR_CONFIRM_NUM;
+        } else if (state == WAITING_FOR_CONFIRM_NUM) {
+        	BuyerBackEnd.setConfirmNum(theInput);
+        	BuyerBackEnd.setSuccessState(2);
+        	theOutput = "Bye.";
+            state = WAITING_TO_SEND_DATA;
+        }
+        
+        return theOutput;
+    }
+}

@@ -1,0 +1,369 @@
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+@SuppressWarnings("serial")
+public class BuyerFrontEnd extends JPanel{
+
+	private Font bodyFont = new Font(Font.SERIF, 20, 20);
+	private Font headerFont = new Font(Font.SERIF, Font.BOLD, 30);
+	private Font subHeaderFont = new Font(Font.SERIF, Font.BOLD, 25);
+	private Color textFieldColor = new Color(245, 240, 240);
+	
+	private ArrayList<Item> itemArray;
+	private int purchaseConfirmed, requiredFields;
+	private JTextField nameField, emailField, phoneField, addressField, ccNumField, ccDateField, ccSecCodeField, sellerIPAddressField;
+	private String itemName, itemDescription;	
+
+	private final int PURCHASE_FAIL_HOSTNAME_ERROR = 0;
+    private final int PURCHASE_FAIL_IO_ERROR= 1;
+    private final int PURCHASE_SUCCESS= 2;
+	
+	BuyerFrontEnd()
+	{
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.setPreferredSize(new Dimension(600, 800));
+
+		itemArray = new ArrayList<Item>();
+			addItems(itemArray);
+	
+		frontPageScreen();
+	}
+	
+	private void frontPageScreen()
+	{
+		this.removeAll();
+	
+		JLabel header = new JLabel ("Welcome to eSell!");
+		header.setFont(headerFont);
+		header.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		JLabel subHeader = new JLabel ("Available items:");
+		subHeader.setFont(subHeaderFont);
+		subHeader.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		JPanel itemListingPanel = new JPanel();
+			itemListingPanel.setLayout(new BoxLayout(itemListingPanel, BoxLayout.PAGE_AXIS));
+			itemListingPanel.setBackground(textFieldColor);
+		JScrollPane scrollPane = new JScrollPane(itemListingPanel);
+
+		this.add(header);
+		this.add(subHeader);
+		this.add(scrollPane);
+		printItems(itemListingPanel);
+
+		this.repaint();
+		this.revalidate();
+	}
+	
+	private void printItems(JPanel itemListingPanel)
+	{	
+		
+		for(int i=0; i<itemArray.size(); i++)
+		{
+			JTextArea name = new JTextArea();
+				name.setBackground(textFieldColor);
+				name.setLineWrap(true);
+				name.setWrapStyleWord(true);
+				name.setFont(bodyFont);
+				name.append(itemArray.get(i).getName());
+			
+			JTextArea description = new JTextArea();
+				description.setBackground(textFieldColor);
+				description.setLineWrap(true);
+				description.setWrapStyleWord(true);
+				description.setFont(bodyFont);
+				description.append(itemArray.get(i).getDescription());
+
+			JButton buyButton = new JButton("Buy");
+				buyButton.setName(Integer.toString(i));
+				buyButton.addActionListener(new BuyButtonListener());
+			
+			JPanel item = new JPanel();
+				item.setLayout(new BoxLayout(item, BoxLayout.LINE_AXIS));
+				item.setBackground(textFieldColor);
+				item.add(name);
+				item.add(description);
+				item.add(buyButton);
+			
+			itemListingPanel.add(item);
+		}
+	}
+	
+	private void checkoutScreen()
+	{
+		this.removeAll();
+		
+		JLabel subHeader = new JLabel (itemName);
+			subHeader.setFont(subHeaderFont);
+			subHeader.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		JTextArea description = new JTextArea();
+			description.setBackground(textFieldColor);
+			description.setFont(bodyFont);
+			description.setLineWrap(true);
+			description.setWrapStyleWord(true);
+			description.append(itemDescription);
+		
+		JLabel checkoutHeader = new JLabel("To purchase " + itemName.toLowerCase() + " please complete following form:");
+			checkoutHeader.setFont(bodyFont);
+			checkoutHeader.setAlignmentX(Component.CENTER_ALIGNMENT);
+			
+		JPanel checkoutFormPanel = new JPanel();
+		JScrollPane scrollPane = new JScrollPane(checkoutFormPanel);
+		checkoutForm(checkoutFormPanel);
+		
+		this.add(subHeader);
+		this.add(description);
+		this.add(checkoutHeader);
+		this.add(scrollPane);
+		
+		this.repaint();
+		this.revalidate();
+		
+	}
+	
+
+	
+	private void checkoutForm(JPanel checkoutFormPanel)
+	{
+		checkoutFormPanel.setLayout(new BoxLayout(checkoutFormPanel, BoxLayout.PAGE_AXIS));
+		
+		JLabel required = new JLabel("All fields are required.");
+			required.setVisible(false);
+			required.setForeground(Color.RED);
+		
+			if (requiredFields>0)
+			{
+				required.setVisible(true);
+			}
+			
+		JPanel buyerNamePanel = new JPanel();
+			buyerNamePanel.setLayout(new BoxLayout(buyerNamePanel, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerNameLabel = new JLabel("Name:");
+			nameField = new JTextField();
+			
+			buyerNamePanel.add(buyerNameLabel);
+			buyerNamePanel.add(nameField);
+			
+		JPanel buyerEmailPanel = new JPanel();
+			buyerEmailPanel.setLayout(new BoxLayout(buyerEmailPanel, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerEmailLabel = new JLabel("Email:");
+			emailField = new JTextField();
+			
+			buyerEmailPanel.add(buyerEmailLabel);
+			buyerEmailPanel.add(emailField);
+			
+		JPanel buyerPhonePanel = new JPanel();
+			buyerPhonePanel.setLayout(new BoxLayout(buyerPhonePanel, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerPhoneLabel = new JLabel("Phone #:");
+			phoneField = new JTextField();
+			
+			buyerPhonePanel.add(buyerPhoneLabel);
+			buyerPhonePanel.add(phoneField);
+		
+		JPanel buyerAddressPanel = new JPanel();
+			buyerAddressPanel.setLayout(new BoxLayout(buyerAddressPanel, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerAddressLabel = new JLabel("Shipping Address:");
+			addressField = new JTextField();
+			
+			buyerAddressPanel.add(buyerAddressLabel);
+			buyerAddressPanel.add(addressField);
+			
+		JPanel buyerCCPanel1 = new JPanel();
+			buyerCCPanel1.setLayout(new BoxLayout(buyerCCPanel1, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerCCNumLabel = new JLabel("Credit Card #:");
+			ccNumField = new JTextField();
+			
+			buyerCCPanel1.add(buyerCCNumLabel);
+			buyerCCPanel1.add(ccNumField);
+			
+		JPanel buyerCCPanel2 = new JPanel();
+			buyerCCPanel2.setLayout(new BoxLayout(buyerCCPanel2, BoxLayout.LINE_AXIS));
+			
+			JLabel buyerCCDateLabel = new JLabel("Exp. Date:");
+			ccDateField = new JTextField();
+			
+			JLabel buyerCCSecCodeLabel = new JLabel("Security Code:");
+			ccSecCodeField = new JTextField();
+			
+			buyerCCPanel2.add(buyerCCDateLabel);
+			buyerCCPanel2.add(ccDateField);
+			buyerCCPanel2.add(buyerCCSecCodeLabel);
+			buyerCCPanel2.add(ccSecCodeField);
+			
+		JPanel ipAddressPanel = new JPanel();
+			ipAddressPanel.setLayout(new BoxLayout(ipAddressPanel, BoxLayout.LINE_AXIS));
+			
+			JLabel sellerIPAddressLabel = new JLabel("Seller IP Address");
+			sellerIPAddressField = new JTextField();
+			
+			ipAddressPanel.add(sellerIPAddressLabel);
+			ipAddressPanel.add(sellerIPAddressField);
+
+		JPanel buttonPanel = new JPanel();
+			buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
+		
+		JButton checkout = new JButton("Checkout");
+			checkout.addActionListener(new CheckoutButtonListener());
+			
+		JButton returnButton = new JButton("Return to Shopping");
+			returnButton.addActionListener(new KeepShoppingButtonListener());
+		
+			buttonPanel.add(checkout);
+			buttonPanel.add(returnButton);
+
+		
+		checkoutFormPanel.add(required);
+		checkoutFormPanel.add(buyerNamePanel);
+		checkoutFormPanel.add(buyerEmailPanel);
+		checkoutFormPanel.add(buyerPhonePanel);
+		checkoutFormPanel.add(buyerAddressPanel);
+		checkoutFormPanel.add(buyerCCPanel1);
+		checkoutFormPanel.add(buyerCCPanel2);
+		checkoutFormPanel.add(ipAddressPanel);
+		checkoutFormPanel.add(buttonPanel);
+	}
+	
+	private void sendPurchaseInfo()
+	{		
+		String name = nameField.getText();
+		String email = emailField.getText();
+		String phone = phoneField.getText();
+		String address = addressField.getText();
+		String ccInfo = "Credit Card #: " + ccNumField.getText() + " Exp. Date: " + ccDateField.getText() + " Security Code: " + ccSecCodeField.getText();
+		String ipAddress = sellerIPAddressField.getText();
+		
+		String purchaseInfo = "Item: " + itemName + " Buyer Info: " + name + " " + email + " " + phone + " " + address + " " + ccInfo;
+		BuyerBackEnd.sendToBackEnd(purchaseInfo, ipAddress);
+		
+		purchaseConfirmed = BuyerBackEnd.getSuccessState();
+	}
+	
+	private void confirmationScreen()
+	{
+		this.removeAll();
+		
+		String confirmNum = BuyerBackEnd.getConfirmNum();
+
+		JTextArea confirmation = new JTextArea();
+			confirmation.setFont(subHeaderFont);
+			confirmation.setLineWrap(true);
+			confirmation.setWrapStyleWord(true);
+			confirmation.setBackground(this.getBackground());
+			confirmation.setMaximumSize(new Dimension(600, 300));
+			
+			confirmation.append("Thank You!\n");
+			confirmation.append("The seller has received your order and will contact you when your order has been processed.");
+			confirmation.append("Your order number is " + confirmNum + ".\n");
+			confirmation.append("Please save this order number for your records.\n");
+		
+		JButton returntoMainButton = new JButton ("Return to Shopping");
+			returntoMainButton.addActionListener(new KeepShoppingButtonListener());
+		
+		this.add(confirmation);
+		this.add(returntoMainButton);
+		
+		this.repaint();
+		this.revalidate();
+	}
+	
+	private void failureScreen()
+	{
+		this.removeAll();
+		String errorMessage = "I'm sorry there has been an error completing your purchase, please try again later.";
+
+		JTextArea purchaseFail = new JTextArea(errorMessage);
+			purchaseFail.setFont(subHeaderFont);
+			purchaseFail.setLineWrap(true);
+			purchaseFail.setWrapStyleWord(true);
+			purchaseFail.setBackground(this.getBackground());
+			purchaseFail.setMaximumSize(new Dimension(600, 300));
+			
+		JButton returnButton = new JButton("Return to Shopping");
+			returnButton.addActionListener(new KeepShoppingButtonListener());
+	
+		this.add(purchaseFail);
+		this.add(returnButton);
+	
+		this.repaint();
+		this.revalidate();
+	}
+	
+	private void addItems(ArrayList<Item> itemArray)
+	{
+		Item itemOne = new Item("Surface Pro Laptop Computer", "1 year old Surface Pro laptop with blue keyboard. Runs Windows 8.1, 128GB hard drive.");
+		Item itemTwo = new Item("Television", "TV from 2010, flat screen.");
+		Item itemThree = new Item("Keyboard", "Piano keyboard, 4ft wide, permanently mounted on stand, comes with 3 Beginner Piano songbooks.");
+		
+		itemArray.add(itemOne);
+		itemArray.add(itemTwo);
+		itemArray.add(itemThree);
+	}
+	
+
+	private class BuyButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event) {
+			JButton item = (JButton)event.getSource();
+			int itemNumber = Integer.parseInt(item.getName());
+			itemName = itemArray.get(itemNumber).getName();
+			itemDescription = itemArray.get(itemNumber).getDescription();
+			
+			
+			requiredFields = 0;
+			checkoutScreen();
+		}
+	}
+	
+	private class CheckoutButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			if (!nameField.getText().isEmpty() && !emailField.getText().isEmpty() && !phoneField.getText().isEmpty() 
+					&& !addressField.getText().isEmpty() && !ccNumField.getText().isEmpty() && !ccDateField.getText().isEmpty()
+					&& !ccSecCodeField.getText().isEmpty() && !sellerIPAddressField.getText().isEmpty())
+			{
+				requiredFields=0;
+				sendPurchaseInfo();
+			
+				if (purchaseConfirmed == PURCHASE_SUCCESS)
+				{
+					confirmationScreen();
+				}else if (purchaseConfirmed == PURCHASE_FAIL_HOSTNAME_ERROR || purchaseConfirmed == PURCHASE_FAIL_IO_ERROR)
+				{
+					failureScreen();
+				}
+			}else
+			{
+				requiredFields++;
+				checkoutScreen();
+			}
+		}
+	}
+	
+	private class KeepShoppingButtonListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent event)
+		{
+			frontPageScreen();
+		}
+	}
+}
